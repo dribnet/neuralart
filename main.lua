@@ -26,6 +26,7 @@ cmd:text('Options:')
 cmd:option('-style',   'none', 'Path to style image')
 cmd:option('-content', 'none', 'Path to content image')
 cmd:option('-style_factor', 5e9, 'Trade-off factor between style and content')
+cmd:option('-from_noise',  false, 'Initialize from white noise (not content image)')
 local opt = cmd:parse(arg)
 
 local euclidean = nn.MSECriterion()
@@ -164,10 +165,13 @@ local optim_state = {
     dampening = 0.0,
 }
 
-local input = img
-
--- generate from noise
---local input = torch.randn(1, 3, img:size(3), img:size(4)):cuda()
+-- initialize either from white noise or from content image
+local input
+if opt.from_noise then
+    input = torch.randn(1, 3, img:size(3), img:size(4)):cuda()
+else
+    input = img
+end
 
 -- optimize
 local num_iters = 500
